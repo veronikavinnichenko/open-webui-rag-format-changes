@@ -38,6 +38,7 @@ class Chat(Base):
 
     meta = Column(JSON, server_default="{}")
     folder_id = Column(Text, nullable=True)
+    params = Column(JSON, server_default="{}")  # Добавляем поле для параметров чата
 
 
 class ChatModel(BaseModel):
@@ -57,6 +58,7 @@ class ChatModel(BaseModel):
 
     meta: dict = {}
     folder_id: Optional[str] = None
+    params: dict = {}  # Добавляем поле для параметров чата
 
 
 ####################
@@ -95,6 +97,7 @@ class ChatResponse(BaseModel):
     pinned: Optional[bool] = False
     meta: dict = {}
     folder_id: Optional[str] = None
+    params: dict = {}  # Добавляем поле для параметров чата
 
 
 class ChatTitleIdResponse(BaseModel):
@@ -164,6 +167,22 @@ class ChatTable:
                 chat_item = db.get(Chat, id)
                 chat_item.chat = chat
                 chat_item.title = chat["title"] if "title" in chat else "New Chat"
+                chat_item.updated_at = int(time.time())
+                db.commit()
+                db.refresh(chat_item)
+
+                return ChatModel.model_validate(chat_item)
+        except Exception:
+            return None
+
+    def update_chat_params_by_id(self, id: str, params: dict) -> Optional[ChatModel]:
+        """
+        Обновляет только параметры чата (params), не затрагивая остальные данные
+        """
+        try:
+            with get_db() as db:
+                chat_item = db.get(Chat, id)
+                chat_item.params = params
                 chat_item.updated_at = int(time.time())
                 db.commit()
                 db.refresh(chat_item)

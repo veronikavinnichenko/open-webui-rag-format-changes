@@ -960,17 +960,43 @@ async def process_chat_payload(request, form_data, user, metadata, model):
 
         # Workaround for Ollama 2.0+ system prompt issue
         # TODO: replace with add_or_update_system_message
+        
+        # Определяем RAG формат вывода
+        rag_output_format = None
+        try:
+            from open_webui.utils.rag_utils import get_rag_output_format
+            
+            # Получаем параметры чата и настройки пользователя
+            chat_params = metadata.get("chat_params", {})
+            user_settings = user.settings.model_dump() if hasattr(user, 'settings') and user.settings else {}
+            global_config = {
+                "RAG_OUTPUT_FORMAT_DEFAULT": request.app.state.config.RAG_OUTPUT_FORMAT_DEFAULT
+            }
+            
+            rag_output_format = get_rag_output_format(chat_params, user_settings, global_config)
+            log.debug(f"Using RAG output format: {rag_output_format}")
+            
+        except Exception as e:
+            log.warning(f"Could not determine RAG output format: {e}")
+            rag_output_format = None
+        
         if model.get("owned_by") == "ollama":
             form_data["messages"] = prepend_to_first_user_message_content(
                 rag_template(
-                    request.app.state.config.RAG_TEMPLATE, context_string, prompt
+                    request.app.state.config.RAG_TEMPLATE, 
+                    context_string, 
+                    prompt,
+                    rag_output_format
                 ),
                 form_data["messages"],
             )
         else:
             form_data["messages"] = add_or_update_system_message(
                 rag_template(
-                    request.app.state.config.RAG_TEMPLATE, context_string, prompt
+                    request.app.state.config.RAG_TEMPLATE, 
+                    context_string, 
+                    prompt,
+                    rag_output_format
                 ),
                 form_data["messages"],
             )

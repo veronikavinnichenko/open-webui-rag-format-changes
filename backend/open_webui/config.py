@@ -1439,7 +1439,7 @@ FOLLOW_UP_GENERATION_PROMPT_TEMPLATE = PersistentConfig(
 DEFAULT_FOLLOW_UP_GENERATION_PROMPT_TEMPLATE = """### Task:
 Suggest 3-5 relevant follow-up questions or prompts that the user might naturally ask next in this conversation as a **user**, based on the chat history, to help continue or deepen the discussion.
 ### Guidelines:
-- Write all follow-up questions from the user’s point of view, directed to the assistant.
+- Write all follow-up questions from the user's point of view, directed to the assistant.
 - Make questions concise, clear, and directly related to the discussed topic(s).
 - Only suggest follow-ups that make sense given the chat content and do not repeat what was already covered.
 - If the conversation is very short or not specific, suggest more general (but relevant) follow-ups the user might ask.
@@ -2271,8 +2271,7 @@ Provide a clear and direct response to the user's query, including inline citati
 
 <user_query>
 {{QUERY}}
-</user_query>
-"""
+</user_query>"""
 
 RAG_TEMPLATE = PersistentConfig(
     "RAG_TEMPLATE",
@@ -3132,3 +3131,111 @@ LDAP_ATTRIBUTE_FOR_GROUPS = PersistentConfig(
     "ldap.server.attribute_for_groups",
     os.environ.get("LDAP_ATTRIBUTE_FOR_GROUPS", "memberOf"),
 )
+
+# RAG Output Format Configuration
+RAG_OUTPUT_FORMAT_DEFAULT = PersistentConfig(
+    "RAG_OUTPUT_FORMAT_DEFAULT",
+    "rag.output_format.default",
+    os.environ.get("RAG_OUTPUT_FORMAT_DEFAULT", "detailed"),
+)
+
+RAG_OUTPUT_FORMATS = PersistentConfig(
+    "RAG_OUTPUT_FORMATS",
+    "rag.output_format.available",
+    os.environ.get("RAG_OUTPUT_FORMATS", "compact,detailed,academic,table,list").split(","),
+)
+
+# RAG Output Format Templates
+RAG_COMPACT_TEMPLATE = """### Task:
+Provide a concise, direct response using the provided context. Focus on key information only.
+
+### Guidelines:
+- Keep response under 100 words
+- Use bullet points when possible
+- Include only essential citations [id]
+- Be direct and to the point
+
+<context>
+{{CONTEXT}}
+</context>
+
+<user_query>
+{{QUERY}}
+</user_query>"""
+
+RAG_DETAILED_TEMPLATE = """### Task:
+Provide a comprehensive response using the provided context with detailed explanations and examples.
+
+### Guidelines:
+- Provide thorough analysis and context
+- Include relevant examples and explanations
+- Use proper citations [id] when referencing sources
+- Structure response with clear sections
+
+<context>
+{{CONTEXT}}
+</context>
+
+<user_query>
+{{QUERY}}
+</user_query>"""
+
+RAG_ACADEMIC_TEMPLATE = """### Task:
+Provide an academic-style response using the provided context with formal language and structured format.
+
+### Guidelines:
+- Use formal, academic language
+- Include proper citations [id] with source references
+- Structure response with introduction, body, and conclusion
+- Provide critical analysis and discussion
+
+<context>
+{{CONTEXT}}
+</context>
+
+<user_query>
+{{QUERY}}
+</user_query>"""
+
+RAG_TABLE_TEMPLATE = """### Task:
+Organize the response in a clear table format using the provided context.
+
+### Guidelines:
+- Create a structured table with relevant columns
+- Include headers for each column
+- Use citations [id] for source information
+- Ensure table is easy to read and understand
+
+<context>
+{{CONTEXT}}
+</context>
+
+<user_query>
+{{QUERY}}
+</user_query>"""
+
+RAG_LIST_TEMPLATE = """### Task:
+Present the response as a well-organized list using the provided context.
+
+### Guidelines:
+- Use numbered or bulleted lists as appropriate
+- Group related items together
+- Include citations [id] for source information
+- Ensure logical flow and organization
+
+<context>
+{{CONTEXT}}
+</context>
+
+<user_query>
+{{QUERY}}
+</user_query>"""
+
+# RAG Template Mapping
+RAG_FORMAT_TEMPLATES = {
+    "compact": RAG_COMPACT_TEMPLATE,
+    "detailed": RAG_DETAILED_TEMPLATE,
+    "academic": RAG_ACADEMIC_TEMPLATE,
+    "table": RAG_TABLE_TEMPLATE,
+    "list": RAG_LIST_TEMPLATE,
+}

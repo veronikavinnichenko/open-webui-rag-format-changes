@@ -858,3 +858,32 @@ async def delete_all_tags_by_id(id: str, user=Depends(get_verified_user)):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail=ERROR_MESSAGES.NOT_FOUND
         )
+
+############################
+# UpdateChatRAGParams
+############################
+
+class ChatRAGParamsForm(BaseModel):
+    rag: dict
+
+@router.post("/{id}/rag-params", response_model=Optional[ChatResponse])
+async def update_chat_rag_params(
+    id: str, form_data: ChatRAGParamsForm, user=Depends(get_verified_user)
+):
+    """
+    Обновляет RAG параметры чата (формат вывода и другие настройки)
+    """
+    chat = Chats.get_chat_by_id_and_user_id(id, user.id)
+    if chat:
+        # Обновляем только RAG параметры, не затрагивая остальные данные чата
+        current_params = chat.params if hasattr(chat, 'params') else {}
+        updated_params = {**current_params, "rag": form_data.rag}
+        
+        # Обновляем чат с новыми параметрами
+        chat = Chats.update_chat_params_by_id(id, updated_params)
+        return ChatResponse(**chat.model_dump())
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=ERROR_MESSAGES.ACCESS_PROHIBITED,
+        )

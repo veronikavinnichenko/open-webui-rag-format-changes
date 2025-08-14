@@ -1351,6 +1351,19 @@ async def chat_completion(
             ),
         }
 
+        # Добавляем параметры чата в metadata для RAG форматов
+        if metadata.get("chat_id"):
+            try:
+                from open_webui.models.chats import Chats
+                chat = Chats.get_chat_by_id(metadata["chat_id"])
+                if chat and hasattr(chat, 'params'):
+                    metadata["chat_params"] = chat.params
+            except Exception as e:
+                log.debug(f"Could not get chat params: {e}")
+                metadata["chat_params"] = {}
+        else:
+            metadata["chat_params"] = {}
+
         request.state.metadata = metadata
         form_data["metadata"] = metadata
 

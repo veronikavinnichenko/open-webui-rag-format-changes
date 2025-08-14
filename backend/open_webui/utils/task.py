@@ -148,9 +148,28 @@ def replace_messages_variable(
 # {{prompt:middletruncate:8000}}
 
 
-def rag_template(template: str, context: str, query: str):
+def rag_template(template: str, context: str, query: str, output_format: str = None):
+    """
+    Применяет RAG шаблон с учетом выбранного формата вывода
+    
+    Args:
+        template: Базовый шаблон RAG
+        context: Контекст для RAG
+        query: Запрос пользователя
+        output_format: Формат вывода (compact, detailed, academic, table, list)
+    """
     if template.strip() == "":
         template = DEFAULT_RAG_TEMPLATE
+
+    # Если указан формат вывода, используем соответствующий шаблон
+    if output_format:
+        try:
+            from open_webui.config import RAG_FORMAT_TEMPLATES
+            if output_format in RAG_FORMAT_TEMPLATES:
+                template = RAG_FORMAT_TEMPLATES[output_format]
+                log.debug(f"Using RAG output format: {output_format}")
+        except ImportError:
+            log.warning(f"Could not import RAG format templates, using default")
 
     template = prompt_template(template)
 

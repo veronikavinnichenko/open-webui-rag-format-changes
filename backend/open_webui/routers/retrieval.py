@@ -90,6 +90,8 @@ from open_webui.config import (
     DEFAULT_LOCALE,
     RAG_EMBEDDING_CONTENT_PREFIX,
     RAG_EMBEDDING_QUERY_PREFIX,
+    RAG_OUTPUT_FORMATS,
+    RAG_OUTPUT_FORMAT_DEFAULT,
 )
 from open_webui.env import (
     SRC_LOG_LEVELS,
@@ -2228,3 +2230,34 @@ def process_files_batch(
                 )
 
     return BatchProcessFilesResponse(results=results, errors=errors)
+
+
+############################
+# Get RAG Output Formats
+############################
+
+@router.get("/output-formats")
+async def get_rag_output_formats(request: Request, user=Depends(get_verified_user)):
+    """
+    Возвращает доступные форматы вывода RAG
+    """
+    try:
+        from open_webui.config import RAG_OUTPUT_FORMATS, RAG_OUTPUT_FORMAT_DEFAULT
+        
+        return {
+            "available_formats": RAG_OUTPUT_FORMATS,
+            "default_format": RAG_OUTPUT_FORMAT_DEFAULT,
+            "description": {
+                "compact": "Краткий ответ с ключевой информацией",
+                "detailed": "Подробный ответ с объяснениями",
+                "academic": "Академический стиль с формальным языком",
+                "table": "Структурированный табличный формат",
+                "list": "Организованный список"
+            }
+        }
+    except Exception as e:
+        log.exception(e)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Could not retrieve RAG output formats"
+        )

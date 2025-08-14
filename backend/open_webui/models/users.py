@@ -40,6 +40,7 @@ class User(Base):
 
 class UserSettings(BaseModel):
     ui: Optional[dict] = {}
+    rag: Optional[dict] = {}  # Добавляем поле для RAG настроек
     model_config = ConfigDict(extra="allow")
     pass
 
